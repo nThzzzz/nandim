@@ -51,13 +51,13 @@ Fracao multiplicar(Fracao a, Fracao b) {
 // Função para ler um número inteiro ou uma fração
 Fracao lerFracao() {
     Fracao f;
-    char buffer[20];
+    char frac[20];
 
     // Tenta ler a fração (numerador/denominador) ou inteiro
-    scanf("%s", buffer);
+    scanf("%s", frac);
 
     // Tenta analisar a entrada como uma fração
-    if (sscanf(buffer, "%d/%d", &f.numerador, &f.denominador) == 2) { // Genial 
+    if (sscanf(frac, "%d/%d", &f.numerador, &f.denominador) == 2) { // Genial 
         // Se a fração for válida
         if (f.denominador == 0) {
             printf("Denominador não pode ser zero.\n");
@@ -65,7 +65,7 @@ Fracao lerFracao() {
         }
     } else {
         // Se não for uma fração, leia como número inteiro
-        f.numerador = atoi(buffer); // Converte de string pra numero
+        f.numerador = atoi(frac); // Converte de string pra numero
         f.denominador = 1; 
     }
     return simplificar(f);
@@ -79,6 +79,30 @@ Fracao fracPadrao(){
     f.denominador = 1;
 
     return simplificar(f);
+}
+
+Fracao frac_unitaria_Positiva(){
+    Fracao f;
+    f.numerador = 1;
+    f.denominador = 1;
+    return simplificar(f);
+}
+
+Fracao frac_unitaria_Negativa(){
+    Fracao f;
+
+    f.numerador = -1;
+    f.denominador = 1;
+
+    return simplificar(f);
+}
+
+int comparar(Fracao a, Fracao b){
+    if(a.numerador==b.numerador && a.denominador == b.denominador){
+        return 0;
+    }else{
+        return 1;
+    }
 }
 
 
@@ -250,18 +274,18 @@ void multi(Fracao** matriz, int linhas, int colunas) {
 }
 
  //Função para calcular o determinante
-float determinante(float** matriz, int n) {
-    float det = 0;
+Fracao determinante(Fracao** matriz, int n) {
+    Fracao det = fracPadrao();
 
     if (n == 1) {
         return matriz[0][0];
-    } else if (n == 2) {
-        return matriz[0][0] * matriz[1][1] - matriz[0][1] * matriz[1][0];
+    } else if (n == 2) {    
+        return subtrair(multiplicar(matriz[0][0], matriz[1][1]), multiplicar(matriz[0][1], matriz[1][0]));
     } else {
         for (int x = 0; x < n; x++) {
-            float** submatriz = malloc((n - 1) * sizeof(float*));
+            Fracao** submatriz = (Fracao**)malloc((n - 1) * sizeof(Fracao*));
             for (int i = 0; i < n - 1; i++) {
-                submatriz[i] = malloc((n - 1) * sizeof(float));
+                submatriz[i] = malloc((n - 1) * sizeof(Fracao));
             }
 
             for (int i = 1; i < n; i++) {  //inicia com 1 pra não copiar a linha errada para submatriz da pra fazer sem soq da mais trabalho
@@ -275,7 +299,12 @@ float determinante(float** matriz, int n) {
                 }
             }
 
-            det += (x % 2 == 0 ? 1 : -1) * matriz[0][x] * determinante(submatriz, n - 1); // Vou reduzindo ate ficar 2:2
+            if(x%2==0){
+                det = somar(multiplicar(multiplicar(frac_unitaria_Positiva(), matriz[0][x]), determinante(submatriz, n - 1)), fracPadrao());
+            }else{
+                det = somar(multiplicar(multiplicar(frac_unitaria_Negativa(), matriz[0][x]), determinante(submatriz, n - 1)), fracPadrao());
+            }
+            //det += (x % 2 == 0 ? 1 : -1) * matriz[0][x] * determinante(submatriz, n - 1); // Vou reduzindo ate ficar 2:2
 
             for (int i = 0; i < n - 1; i++) {
                 free(submatriz[i]);
@@ -287,26 +316,26 @@ float determinante(float** matriz, int n) {
 }
 
  //Função para calcular a inversa
-void inversa(float** matriz, int n) {
-    float det = determinante(matriz, n);
-    if (det == 0) {
+void inversa(Fracao** matriz, int n) {
+    Fracao det = determinante(matriz, n);
+    if (comparar(determinante(matriz, n), fracPadrao())==0) {
         printf("Matriz não tem inversa (determinante é zero).\n");
         return;
     }
 
-    float** inversa = malloc(n * sizeof(float*));
-    float** cofatores = malloc(n * sizeof(float*));
+    Fracao** inversa = (Fracao**)malloc(n * sizeof(Fracao*));
+    Fracao** cofatores = (Fracao**)malloc(n * sizeof(Fracao*));
 
     for (int i = 0; i < n; i++) {
-        inversa[i] = malloc(n * sizeof(float));
-        cofatores[i] = malloc(n * sizeof(float));
+        inversa[i] = malloc(n * sizeof(Fracao));
+        cofatores[i] = malloc(n * sizeof(Fracao));
     }
 
     for (int i = 0; i < n; i++) {
         for (int j = 0; j < n; j++) {
-            float** submatriz = malloc((n - 1) * sizeof(float*));
+            Fracao** submatriz = (Fracao**)malloc((n - 1) * sizeof(Fracao*));
             for (int x = 0; x < n - 1; x++) {
-                submatriz[x] = malloc((n - 1) * sizeof(float));
+                submatriz[x] = malloc((n - 1) * sizeof(Fracao));
             }
 
             int subi = 0;
@@ -323,7 +352,12 @@ void inversa(float** matriz, int n) {
                 subi++;
             }
 
-            cofatores[i][j] = (float)((i + j) % 2 == 0 ? 1 : -1) * determinante(submatriz, n - 1);
+            if((i+j)%2==0){
+                cofatores[i][j] = multiplicar(frac_unitaria_Positiva(), determinante(submatriz, n-1));
+            }else{
+                cofatores[i][j] = multiplicar(frac_unitaria_Negativa(), determinante(submatriz, n-1));
+            }
+            //cofatores[i][j] = (float)((i + j) % 2 == 0 ? 1 : -1) * determinante(submatriz, n - 1);
 
             for (int x = 0; x < n - 1; x++) {
                 free(submatriz[x]);
@@ -335,7 +369,7 @@ void inversa(float** matriz, int n) {
    //Transposta da matriz de cofatores
     for (int i = 0; i < n; i++) {
         for (int j = 0; j < n; j++) {
-            inversa[i][j] = cofatores[j][i] / det;
+            inversa[i][j] = dividir(cofatores[j][i], det);
         }
     }
 
@@ -351,16 +385,16 @@ void inversa(float** matriz, int n) {
     free(cofatores);
 }
 
-void decomposicaoLU(float** matriz, int n){
+void decomposicaoLU(Fracao** matriz, int n){
 
-    float** matrizL = malloc(n * sizeof(float*));
-    float** matrizU = malloc(n * sizeof(float*));
+    Fracao** matrizL = (Fracao**)malloc(n * sizeof(Fracao*));
+    Fracao** matrizU = (Fracao**)malloc(n * sizeof(Fracao*));
 
     for (int i = 0; i < n; i++) {
-        matrizL[i] = malloc(n * sizeof(float));
+        matrizL[i] = malloc(n * sizeof(Fracao));
     }
     for (int i = 0; i < n; i++) {
-        matrizU[i] = malloc(n * sizeof(float));
+        matrizU[i] = malloc(n * sizeof(Fracao));
     }
 
     for (int i = 0; i < n; i++) {
@@ -368,22 +402,24 @@ void decomposicaoLU(float** matriz, int n){
             if (i <= j)
                 matrizU[i][j] = matriz[i][j];  // Copia elementos de A para U
             else
-                matrizU[i][j] = 0;
+                matrizU[i][j] = fracPadrao();
 
             if (i == j)
-                matrizL[i][j] = 1;  // Elementos da diagonal de L são 1
+                matrizL[i][j] = frac_unitaria_Positiva();  // Elementos da diagonal de L são 1
             else if (i > j)
-                matrizL[i][j] = 0;
+                matrizL[i][j] = fracPadrao();
         }
     }
 
     // Fatoração LU
     for (int k = 0; k < n - 1; k++) {
         for (int i = k + 1; i < n; i++) {
-            matrizL[i][k] = matriz[i][k] / matriz[k][k];  // Calcula o multiplicador
+            matrizL[i][k] = dividir(matriz[i][k], matriz[k][k]);  // Calcula o multiplicador
             for (int j = k; j < n; j++) {
-               matriz[i][j] = matriz[i][j] - matrizL[i][k] * matriz[k][j];  // Eliminação
-               matrizU[i][j] = matriz[i][j];   //Atualiza U com os valores resultantes
+                matriz[i][j] = subtrair(matriz[i][j], multiplicar(matrizL[i][k], matriz[k][j]));
+                matrizU[i][j] = matriz[i][j];
+               //matriz[i][j] = matriz[i][j] - matrizL[i][k] * matriz[k][j];  // Eliminação
+               //matrizU[i][j] = matriz[i][j];   //Atualiza U com os valores resultantes
             }
         }
     }

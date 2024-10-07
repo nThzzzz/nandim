@@ -45,20 +45,22 @@ int main() {
     } else if (opc == 'T') {
         transoposta(matriz, linhas, colunas);
     } else if (opc == 'D') {
-        // if (linhas == colunas) {
-        //     float det = determinante(matriz, linhas);
-        //     printf("O determinante da matriz é: %.2f\n", det);
-        // } else {
-        //     printf("O determinante só pode ser calculado para matrizes quadradas.\n");
-        // }
+        if (linhas == colunas) {
+            Fracao det = determinante(matriz, linhas);
+            printf("O determinante da matriz é: ");
+            imprimirFracao(det);
+            printf("\n");
+        } else {
+            printf("O determinante só pode ser calculado para matrizes quadradas.\n");
+        }
     } else if (opc == 'I') {
-        // if (linhas == colunas) {
-        //     inversa(matriz, linhas);
-        // } else {
-        //     printf("A inversa só pode ser calculada para matrizes quadradas.\n");
-        // }
+        if (linhas == colunas) {
+            inversa(matriz, linhas);
+        } else {
+            printf("A inversa só pode ser calculada para matrizes quadradas.\n");
+        }
     } else if (opc == 'X') {
-        // decomposicaoLU(matriz, linhas);
+        decomposicaoLU(matriz, linhas);
     }
 
     // Liberação de memória

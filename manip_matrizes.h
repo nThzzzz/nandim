@@ -22,8 +22,8 @@ void transoposta(Fracao** matriz, int linhas, int colunas);
 void soma(Fracao** matriz, int linhas, int colunas);
 void sub(Fracao** matriz, int linhas, int colunas);
 void multi(Fracao** matriz, int linhas, int colunas);
-float determinante(float** matriz, int n);
-void inversa(float** matriz, int n);
-void decomposicaoLU(float** matriz, int n);
+Fracao determinante(Fracao** matriz, int n);
+void inversa(Fracao** matriz, int n);
+void decomposicaoLU(Fracao** matriz, int n);
 
 #endif
