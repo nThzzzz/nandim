@@ -25,5 +25,6 @@ void multi(Fracao** matriz, int linhas, int colunas);
 Fracao determinante(Fracao** matriz, int n);
 void inversa(Fracao** matriz, int n);
 void decomposicaoLU(Fracao** matriz, int n);
+void sistemalinear();
 
 #endif

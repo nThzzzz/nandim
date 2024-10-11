@@ -10,9 +10,21 @@ int mdc(int a, int b) {
 
 // Função para simplificar a fração
 Fracao simplificar(Fracao f) {
+    if (f.numerador == 0) {
+        f.denominador = 1; 
+        return f;
+    }
+
     int divisor_comum = mdc(f.numerador, f.denominador);
     f.numerador /= divisor_comum;
     f.denominador /= divisor_comum;
+
+    // Se o denominador for negativo, inverta o sinal do numerador
+    if (f.denominador < 0) {
+        f.denominador *= -1;
+        f.numerador *= -1;
+    }
+
     return f;
 }
 
@@ -35,8 +47,10 @@ Fracao subtrair(Fracao a, Fracao b) {
 // Funcao que dividi frações
 Fracao dividir(Fracao a, Fracao b) {
     Fracao resultado;
+
     resultado.numerador = a.numerador * b.denominador;
     resultado.denominador = a.denominador * b.numerador;
+    
     return simplificar(resultado);
 }
 
@@ -110,9 +124,9 @@ int comparar(Fracao a, Fracao b){
 void imprimirFracao(Fracao f) {
     f = simplificar(f);
     if (f.denominador == 1) {
-        printf("  %d  ", f.numerador);  // Se denominador for 1, é um número inteiro
+        printf("     %d     ", f.numerador);  // Se denominador for 1, é um número inteiro
     } else {
-        printf(" %d/%d ", f.numerador, f.denominador);  // Caso contrário, imprime a fração
+        printf("    %d/%d    ", f.numerador, f.denominador);  // Caso contrário, imprime a fração
     }
 }
 
@@ -315,7 +329,7 @@ Fracao determinante(Fracao** matriz, int n) {
     return det;
 }
 
- //Função para calcular a inversa
+//Função para calcular a inversa
 void inversa(Fracao** matriz, int n) {
     Fracao det = determinante(matriz, n);
     if (comparar(determinante(matriz, n), fracPadrao())==0) {
@@ -385,6 +399,7 @@ void inversa(Fracao** matriz, int n) {
     free(cofatores);
 }
 
+// Decomposição LU
 void decomposicaoLU(Fracao** matriz, int n){
 
     Fracao** matrizL = (Fracao**)malloc(n * sizeof(Fracao*));
@@ -423,9 +438,10 @@ void decomposicaoLU(Fracao** matriz, int n){
             }
         }
     }
-    printf("-------------Matriz U-------------\n");
+    
+    printf("Matriz U: \n");
     printMatriz(matrizU, n, n);
-    printf("-------------Matriz L-------------\n");
+    printf("Matriz L: \n");
     printMatriz(matrizL, n, n);
 
 
@@ -438,4 +454,80 @@ void decomposicaoLU(Fracao** matriz, int n){
     }
     free(matrizL);
     free(matrizU);
+}
+
+void sistemalinear() {
+    int icognitas, eqs;
+
+    printf("Digite o número de incógnitas do sistema: ");
+    scanf("%d", &icognitas);
+    printf("Digite o número de equações do sistema: ");
+    scanf("%d", &eqs);
+
+    if (icognitas > eqs) {
+        printf("O sistema é SPI (Sistema Possível Indeterminado)\n");
+        return;
+    }
+
+    // Alocação das equações e termos independentes
+    Fracao** equacoes = (Fracao**)malloc(eqs * sizeof(Fracao*));
+    for (int i = 0; i < eqs; i++) {
+        equacoes[i] = (Fracao*)malloc(icognitas * sizeof(Fracao));
+    }
+
+    Fracao* independentes = (Fracao*)malloc(eqs * sizeof(Fracao));
+
+    // Leitura dos coeficientes
+    printf("Digite os coeficientes das equações:\n");
+    for (int i = 0; i < eqs; i++) {
+        for (int j = 0; j < icognitas; j++) {
+            printf("Coeficiente a[%d][%d]: ", i + 1, j + 1);
+            equacoes[i][j] = lerFracao();
+        }
+        printf("Termo independente b[%d]: ", i + 1);
+        independentes[i] = lerFracao();
+    }
+
+    // Eliminação de Gauss
+    for (int i = 0; i < icognitas; i++) {
+        // Pivô
+        Fracao piv = equacoes[i][i];
+        for (int j = i; j < icognitas; j++) {
+            equacoes[i][j] = dividir(equacoes[i][j], piv);
+        }
+        independentes[i] = dividir(independentes[i], piv);
+
+        // Eliminação abaixo da diagonal
+        for (int k = i + 1; k < eqs; k++) {
+            Fracao fator = equacoes[k][i];
+            for (int j = i; j < icognitas; j++) {
+                equacoes[k][j] = subtrair(equacoes[k][j], multiplicar(fator, equacoes[i][j]));
+            }
+            independentes[k] = subtrair(independentes[k], multiplicar(fator, independentes[i]));
+        }
+    }
+
+    // Substituição retroativa
+    Fracao* solucoes = (Fracao*)malloc(icognitas * sizeof(Fracao));
+    
+    for (int i = icognitas - 1; i >= 0; i--) {
+        solucoes[i] = independentes[i];
+        for (int j = i + 1; j < icognitas; j++) {
+            solucoes[i] = subtrair(solucoes[i], multiplicar(equacoes[i][j], solucoes[j]));
+        }
+    }
+
+    // Exibe as soluções
+    printf("Soluções do sistema:\n");
+    for (int i = 0; i < icognitas; i++) {
+        printf("x%d = %d/%d\n", i + 1, solucoes[i].numerador, solucoes[i].denominador);
+    }
+
+    // Liberação da memória
+    for (int i = 0; i < eqs; i++) {
+        free(equacoes[i]);
+    }
+    free(equacoes);
+    free(independentes);
+    free(solucoes);
 }

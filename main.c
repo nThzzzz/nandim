@@ -31,20 +31,20 @@ int main() {
     printMatriz(matriz, linhas, colunas);
 
     printf("--------------------------------------|+| CALCULADORA 2 |+|--------------------------------------\n");
-    printf("Qual operação deseja realizar: \nSoma\t\t-\t(+)\nSubtração\t-\t(-)\nMultiplicação\t-\t(*)\nInversa\t\t-\t(I)\nTransposta\t-\t(T)\nDeterminante\t-\t(D)\nDecomposição LU\t-\t(X)\n");
+    printf("Qual operação deseja realizar: \nSoma\t\t-\t(1)\nSubtração\t-\t(2)\nMultiplicação\t-\t(3)\nInversa\t\t-\t(4)\nTransposta\t-\t(5)\nDeterminante\t-\t(6)\nDecomposição LU\t-\t(7)\n");
     printf("--------------------------------------|+| CALCULADORA 2 |+|--------------------------------------\n");
 
     getchar(); // Limpa o buffer do enter anterior
     char opc = getchar();
-    if (opc == '+') {
+    if (opc == '1') {
         soma(matriz, linhas, colunas);
-    } else if (opc == '-') {
+    } else if (opc == '2') {
         sub(matriz, linhas, colunas);
-    } else if (opc == '*') {
+    } else if (opc == '3') {
         multi(matriz, linhas, colunas);
-    } else if (opc == 'T') {
+    } else if (opc == '4') {
         transoposta(matriz, linhas, colunas);
-    } else if (opc == 'D') {
+    } else if (opc == '5') {
         if (linhas == colunas) {
             Fracao det = determinante(matriz, linhas);
             printf("O determinante da matriz é: ");
@@ -53,14 +53,16 @@ int main() {
         } else {
             printf("O determinante só pode ser calculado para matrizes quadradas.\n");
         }
-    } else if (opc == 'I') {
+    } else if (opc == '6') {
         if (linhas == colunas) {
             inversa(matriz, linhas);
         } else {
             printf("A inversa só pode ser calculada para matrizes quadradas.\n");
         }
-    } else if (opc == 'X') {
+    } else if (opc == '7') {
         decomposicaoLU(matriz, linhas);
+    }else if(opc == '8'){
+        sistemalinear();
     }
 
     // Liberação de memória
