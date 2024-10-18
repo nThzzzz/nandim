@@ -1,8 +1,52 @@
-#include "manip_matrizes.h"
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include <ctype.h>
+
+typedef struct Fracao {
+  int numerador;
+  int denominador;
+} Fracao;
+
+typedef struct {
+  char CPF[12];
+  char senha[7];
+  char nome[100];
+} pessoa;
+
+// ----- Fração -----
+Fracao simplificar(Fracao f);
+Fracao somar(Fracao a, Fracao b);
+Fracao subtrair(Fracao a, Fracao b);
+void imprimirFracao(Fracao f);
+Fracao lerFracao();
+int mdc(int a, int b);
+int comparar(Fracao a, Fracao b);
+
+// ---------- Menus ---------
+void menu(pessoa pessoas[], int usuariologado);
+void menuinicial(pessoa pessoas[], int usuariologado);
+
+// ---------- Principal ----------
+void printMatriz(Fracao **matriz, int linhas, int colunas);
+void transoposta(Fracao **matriz, int linhas, int colunas);
+void soma();
+void sub();
+void login(pessoa pessoas[], int usuariologado);
+void cadastrar(pessoa pessoas[], int usuariologado);
+
+//---------- Aux ----------
+void limpaterminal();
+void espera();
+void limpabuffer();
+int verificaCPF(char *cpf);
+int arquivoexiste(const char *filename);
+void escrever(pessoa pessoas[], int quantidade);
+void ler(FILE *file, pessoa pessoas[], int quantidade);
+
+//---------- Cria matrizes ----------
+void cria_matriz(Fracao ***matriz, int linhas, int colunas, int segunda_matriz, int mesma_ordem);
+void free_matriz(Fracao **matriz, int linhas);
 
 // Função para simplificar a fração
 Fracao simplificar(Fracao f) {
@@ -87,7 +131,6 @@ Fracao fracPadrao() {
   return simplificar(f);
 }
 
-// Fracao que equivale a 1
 Fracao frac_unitaria_Positiva() {
   Fracao f;
   f.numerador = 1;
@@ -95,7 +138,6 @@ Fracao frac_unitaria_Positiva() {
   return simplificar(f);
 }
 
-// Fracao que vale a -1
 Fracao frac_unitaria_Negativa() {
   Fracao f;
 
@@ -103,6 +145,23 @@ Fracao frac_unitaria_Negativa() {
   f.denominador = 1;
 
   return simplificar(f);
+}
+
+int main() {
+  FILE *file;
+  pessoa pessoas[10];
+  int verificacao;
+  int usuariologado = -1;
+  verificacao = arquivoexiste("dados.bin");
+  if (verificacao == 0) { // O arquivo existe
+    escrever(pessoas, 10);
+  } else {
+    ler(&file, pessoas, 10);
+  }
+  printf("%d\n", verificacao);
+  menuinicial(pessoas, usuariologado);
+
+  return 0;
 }
 
 // ------------------------------------- Funções Principais -------------------------------------
@@ -117,7 +176,6 @@ void printMatriz(Fracao **matriz, int linhas, int colunas) {
   }
 }
 
-// Funçao que mostra a da matriz
 void transoposta(Fracao **matriz, int linhas, int colunas) {
   for (int i = 0; i < linhas; i++) {
     for (int j = 0; j < colunas; j++) {
@@ -169,7 +227,6 @@ void soma() {
     free_matriz(matriz, linhas);
 }
 
-// Funcao que subtrai matrizes
 void sub() {
     Fracao **matriz;
     Fracao **matriz2;
@@ -210,7 +267,6 @@ void sub() {
     free_matriz(matriz, linhas);
 }
 
-// Funcao que realiza multiplicação de matrizes
 void multi() {
     int linhas, colunas;
     printf("Digite o número de linhas da PRIMEIRA matriz: ");
@@ -389,7 +445,6 @@ void inversa() {
     free_matriz(&matriz, n);
 }
 
-// Funcao que decompoe uma matriz no modelo L e U
 void decomposicaoLU(){
     Fracao **matriz;
     int n;
@@ -456,7 +511,6 @@ void decomposicaoLU(){
     free_matriz(matriz, n);
 }
 
-// Funçao responsavel pelo login do usuario
 void login(pessoa pessoas[], int usuariologado) {
   limpaterminal();
   char cpflogin[12];
@@ -506,7 +560,6 @@ void login(pessoa pessoas[], int usuariologado) {
   menuinicial(pessoas, usuariologado); 
 }
 
-// Funcao que cadastra os usuários
 void cadastrar(pessoa pessoas[], int usuariologado) {
   limpaterminal();
   char cpfcadastro[12];
@@ -590,12 +643,11 @@ void cadastrar(pessoa pessoas[], int usuariologado) {
 
 // ------------------------------------- Funções Menus -------------------------------------
 
-// Funcao que apresenta o menu ao usuario
 void menu(pessoa pessoas[], int usuariologado) {
   int condicao = 1;
   limpaterminal();
   printf("--------------------------------------|+| CALCULADORA 2 |+|--------------------------------------\n");
-  printf("Qual operação deseja realizar: \nSoma\t\t-\t(1)\nSubtração\t-\t(2)\nMultiplicação\t-\t(3)\nInversa\t\t-\t(4)\nTransposta\t-\t(5)\nDeterminante\t-\t(6)\nDecomposição LU\t-\t(7)\nSair\t-\t(0)");
+  printf("Qual operação deseja realizar: \nSoma\t\t-\t(1)\nSubtração\t-\t(2)\nMultiplicação\t-\t(3)\nInversa\t\t-\t(4)\nTransposta\t-\t(5)\nDeterminante\t-\t(6)\nDecomposição LU\t-\t(7)\n");
   printf("--------------------------------------|+| CALCULADORA 2 |+|--------------------------------------\n");
 
   Fracao **matriz;
@@ -653,18 +705,14 @@ void menu(pessoa pessoas[], int usuariologado) {
       decomposicaoLU();
       menu(pessoas, usuariologado);
       break;
-    case '0':
-    condicao = 0;
-      menuinicial(pessoas, usuariologado);
-      break;  
     default:
-      printf("Opçao inválida, tente novamente");
+      condicao = 0;
+      menuinicial(pessoas, usuariologado);
       break;
     }
   }
 }
 
-// Funcao que mostra o menu inicial ao usuario
 void menuinicial(pessoa pessoas[], int usuariologado) {
   limpaterminal();
   char opc;
@@ -698,7 +746,6 @@ void menuinicial(pessoa pessoas[], int usuariologado) {
 
 // ---------------------------------------- Funções de criação de Matrizes ----------------------------------------
 
-// Funcao que cria e armazena na memoria a uma matriz
 void cria_matriz(Fracao ***matriz, int linhas, int colunas, int segunda_matriz, int mesma_ordem) {
     *matriz = (Fracao **)malloc(linhas * sizeof(Fracao *));
     for (int i = 0; i < linhas; i++) {
@@ -748,7 +795,6 @@ void free_matriz(Fracao **matriz, int linhas) {
 }
 // ---------------------------------------- Funções Auxiliares ----------------------------------------
 
-// Funcao que limpa o terminal pro usuario
 void limpaterminal() {
   system("cls || clear")
       /*printf("teste")*/;
@@ -760,7 +806,6 @@ void espera() {
   limpabuffer();
 }
 
-// Funcao que limpa o buffer de entrada
 void limpabuffer() {
   int c = 0;
   while ((c = getchar()) != '\n' && c != EOF) {
@@ -768,7 +813,6 @@ void limpabuffer() {
   return;
 }
 
-// Funcao que verifica se o CPF é válido
 int verificaCPF(char *cpf) {
   int numeros_cpf[11];
   int soma = 0;
@@ -824,7 +868,6 @@ int verificaCPF(char *cpf) {
   }
 }
 
-// Funcao que verifia de o binario ja foi criado ou nao
 int arquivoexiste(const char *filename) {
   FILE *file = fopen(filename, "r");
   if (file != NULL) {
@@ -834,7 +877,6 @@ int arquivoexiste(const char *filename) {
   return 0; // Arquivo não existe
 }
 
-// Funcao que escreve no binario
 void escrever(pessoa pessoas[], int quantidade) {
   FILE *file = fopen("dados.bin", "wb");
 
@@ -860,7 +902,6 @@ int mdc(int a, int b) {
   return mdc(b, a % b);
 }
 
-// Compara 2 fracoes
 int comparar(Fracao a, Fracao b) {
   if (a.numerador == b.numerador && a.denominador == b.denominador) {
     return 0;
