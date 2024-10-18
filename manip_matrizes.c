@@ -154,6 +154,7 @@ void soma() {
         }
     }
 
+    limpaterminal();
     printf("A matriz RESULTANTE da soma é: \n");
     printMatriz(matrizresultante, linhas, colunas);
     limpabuffer();
@@ -194,7 +195,8 @@ void sub() {
             matrizresultante[i][j] = subtrair(matriz[i][j], matriz2[i][j]);
         }
     }
-
+    
+    limpaterminal();
     printf("A matriz RESULTANTE da soma é: \n");
     printMatriz(matrizresultante, linhas, colunas);
     limpabuffer();
@@ -249,7 +251,8 @@ void multi() {
             }
         }
     }
-
+    
+    limpaterminal();
    //Exibe a matriz resultante
     printf("A matriz resultante da multiplicação é: \n");
     printMatriz(matrizresultante, linhas, colunas2);
@@ -373,6 +376,7 @@ void inversa() {
         }
     }
 
+    limpaterminal();
     printf("A matriz inversa é:\n");
     printMatriz(inversa, n, n);
     limpabuffer();
@@ -422,6 +426,7 @@ void decomposicaoLU(){
         }
     }
 
+    limpaterminal();
     // Fatoração LU
     for (int k = 0; k < n - 1; k++) {
         for (int i = k + 1; i < n; i++) {
@@ -587,6 +592,88 @@ void cadastrar(pessoa pessoas[], int usuariologado) {
   }
 }
 
+void sistemalinear() {
+    int icognitas, eqs;
+
+    char letras[26] = {'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M', 'N', 'O', 'P', 'Q', 'R', 'S', 'T', 'U', 'V', 'W', 'X', 'Y', 'Z' };
+
+    printf("Digite o número de incógnitas do sistema: ");
+    scanf("%d", &icognitas);
+    printf("Digite o número de equações do sistema: ");
+    scanf("%d", &eqs);
+
+    if (icognitas > eqs) {
+        printf("O sistema é SPI (Sistema Possível Indeterminado) ou  SI (Sistema Impossível)\n");
+        return;
+    }
+
+    // Alocação das equações e termos independentes
+    Fracao** equacoes = (Fracao**)malloc(eqs * sizeof(Fracao*));
+    for (int i = 0; i < eqs; i++) {
+        equacoes[i] = (Fracao*)malloc(icognitas * sizeof(Fracao));
+    }
+
+    Fracao* independentes = (Fracao*)malloc(eqs * sizeof(Fracao));
+
+    // Leitura dos coeficientes
+    printf("Digite os coeficientes das equações:\n");
+    for (int i = 0; i < eqs; i++) {
+        for (int j = 0; j < icognitas; j++) {
+            printf("Coeficiente de %c da %dºEquação: ", letras[j], i+1);
+            equacoes[i][j] = lerFracao();
+        }
+        printf("Termo independente da %dºEquação: ", i + 1);
+        independentes[i] = lerFracao();
+    }
+
+    // Eliminação de Gauss
+    for (int i = 0; i < icognitas; i++) {
+        // Pivô
+        Fracao piv = equacoes[i][i];
+        for (int j = i; j < icognitas; j++) {
+            equacoes[i][j] = dividir(equacoes[i][j], piv);
+        }
+        independentes[i] = dividir(independentes[i], piv);
+
+        // Eliminação abaixo da diagonal
+        for (int k = i + 1; k < eqs; k++) {
+            Fracao fator = equacoes[k][i];
+            for (int j = i; j < icognitas; j++) {
+                equacoes[k][j] = subtrair(equacoes[k][j], multiplicar(fator, equacoes[i][j]));
+            }
+            independentes[k] = subtrair(independentes[k], multiplicar(fator, independentes[i]));
+        }
+    }
+
+    // Substituição retroativa
+    Fracao* solucoes = (Fracao*)malloc(icognitas * sizeof(Fracao));
+    
+    for (int i = icognitas - 1; i >= 0; i--) {
+        solucoes[i] = independentes[i];
+        for (int j = i + 1; j < icognitas; j++) {
+            solucoes[i] = subtrair(solucoes[i], multiplicar(equacoes[i][j], solucoes[j]));
+        }
+    }
+
+    limpaterminal();
+    // Exibe as soluções
+    printf("Soluções do sistema:\n");
+    for (int i = 0; i < icognitas; i++) {
+        printf("%c =", letras[i]);
+        imprimirFracao(solucoes[i]);
+        printf("\n");
+    }
+    limpabuffer();
+    espera();
+
+    // Liberação da memória
+    for (int i = 0; i < eqs; i++) {
+        free(equacoes[i]);
+    }
+    free(equacoes);
+    free(independentes);
+    free(solucoes);
+}
 
 // ------------------------------------- Funções Menus -------------------------------------
 
@@ -595,7 +682,16 @@ void menu(pessoa pessoas[], int usuariologado) {
   int condicao = 1;
   limpaterminal();
   printf("--------------------------------------|+| CALCULADORA 2 |+|--------------------------------------\n");
-  printf("Qual operação deseja realizar: \nSoma\t\t-\t(1)\nSubtração\t-\t(2)\nMultiplicação\t-\t(3)\nInversa\t\t-\t(4)\nTransposta\t-\t(5)\nDeterminante\t-\t(6)\nDecomposição LU\t-\t(7)\nSair\t-\t(0)");
+  printf("Qual operação deseja realizar: \n");
+  printf("Soma\t\t\t-\t(1)\n");
+  printf("Subtração\t\t-\t(2)\n");
+  printf("Multiplicação\t\t-\t(3)\n");
+  printf("Inversa\t\t\t-\t(4)\n");
+  printf("Transposta\t\t-\t(5)\n");
+  printf("Determinante\t\t-\t(6)\n");
+  printf("Decomposição LU\t\t-\t(7)\n");
+  printf("Resolução de Sistemas\t-\t(8)\n");
+  printf("Sair\t\t\t-\t(0)\n");
   printf("--------------------------------------|+| CALCULADORA 2 |+|--------------------------------------\n");
 
   Fracao **matriz;
@@ -651,6 +747,10 @@ void menu(pessoa pessoas[], int usuariologado) {
       break;
     case '7':
       decomposicaoLU();
+      menu(pessoas, usuariologado);
+      break;
+    case '8':
+      sistemalinear();
       menu(pessoas, usuariologado);
       break;
     case '0':

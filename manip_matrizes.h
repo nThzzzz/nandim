@@ -37,6 +37,7 @@ void soma();
 void sub();
 void login(pessoa pessoas[], int usuariologado);
 void cadastrar(pessoa pessoas[], int usuariologado);
+void sistemalinear();
 
 //---------- Aux ----------
 void limpaterminal();
