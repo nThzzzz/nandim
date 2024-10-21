@@ -942,7 +942,7 @@ int verificaCPF(char *cpf) {
     }
   }
   if (veri == 11) {
-    printf("CPF Inválido");
+    return 0;
   } else {
 
     for (int i = 0; i < 9; i++) {
