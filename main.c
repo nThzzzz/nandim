@@ -1,8 +1,8 @@
 #include "manip_matrizes.h"
+#include <ctype.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <ctype.h>
 
 // compilar
 //  gcc -o calcmatriz main.c manip_matrizes.c
