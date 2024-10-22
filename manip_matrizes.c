@@ -1005,9 +1005,9 @@ int comparar(Fracao a, Fracao b) {
 void imprimirFracao(Fracao f) {
   f = simplificar(f);
   if (f.denominador == 1) {
-    printf("  %d  ", f.numerador); // Se denominador for 1, é um número inteiro
+    printf("%5d    ", f.numerador); // Se denominador for 1, é um número inteiro
   } else {
-    printf(" %d/%d ", f.numerador,
+    printf("%5d/%-5d", f.numerador,
            f.denominador); // Caso contrário, imprime a fração
   }
 }
@@ -1044,21 +1044,21 @@ void gravaMatrizesEmTxt(Fracao **matriz1, Fracao **matriz2,
       fprintf(arquivo, "\n\t::VALORES DAS MATRIZES::\n");
       for (int i = 0; i < linhas; i++) {
         for (int j = 0; j < colunas; j++) {
-          fprintf(arquivo, "%d/%d\t", matriz1[i][j].numerador,
+          fprintf(arquivo, "%5d/%-5d\t", matriz1[i][j].numerador,
                   matriz1[i][j].denominador);
         }
 
         fprintf(arquivo, "=\t");
 
         for (int j = 0; j < colunas; j++) {
-          fprintf(arquivo, "%d/%d\t", matriz2[i][j].numerador,
+          fprintf(arquivo, "%5d/%-5d\t", matriz2[i][j].numerador,
                   matriz2[i][j].denominador);
         }
 
         fprintf(arquivo, "*\t");
 
         for (int j = 0; j < colunas; j++) {
-          fprintf(arquivo, "%d/%d\t", matrizresultante[i][j].numerador,
+          fprintf(arquivo, "%5d/%-5d\t", matrizresultante[i][j].numerador,
                   matrizresultante[i][j].denominador);
         }
 
@@ -1068,21 +1068,21 @@ void gravaMatrizesEmTxt(Fracao **matriz1, Fracao **matriz2,
       fprintf(arquivo, "\n\t::VALORES DAS MATRIZES::\n");
       for (int i = 0; i < linhas; i++) {
         for (int j = 0; j < colunas; j++) {
-          fprintf(arquivo, "%d/%d\t", matriz1[i][j].numerador,
+          fprintf(arquivo, "%5d/%-5d\t", matriz1[i][j].numerador,
                   matriz1[i][j].denominador);
         }
 
         fprintf(arquivo, "%c\t", opc);  // Imprimir a operação
 
         for (int j = 0; j < colunas; j++) {
-          fprintf(arquivo, "%d/%d\t", matriz2[i][j].numerador,
+          fprintf(arquivo, "%5d/%-5d\t", matriz2[i][j].numerador,
                   matriz2[i][j].denominador);
         }
 
         fprintf(arquivo, "=\t");
 
         for (int j = 0; j < colunas; j++) {
-          fprintf(arquivo, "%d/%d\t", matrizresultante[i][j].numerador,
+          fprintf(arquivo, "%5d/%-5d\t", matrizresultante[i][j].numerador,
                   matrizresultante[i][j].denominador);
         }
 
@@ -1094,14 +1094,14 @@ void gravaMatrizesEmTxt(Fracao **matriz1, Fracao **matriz2,
       fprintf(arquivo, "\n\t::VALORES DAS MATRIZES (Transposta)::\n");
       for (int i = 0; i < linhas; i++) {
         for (int j = 0; j < colunas; j++) {
-          fprintf(arquivo, "%d/%d\t", matriz1[i][j].numerador,
+          fprintf(arquivo, "%5d/%-5d\t", matriz1[i][j].numerador,
                   matriz1[i][j].denominador);
         }
 
         fprintf(arquivo, "=\t");
 
         for (int j = 0; j < colunas; j++) {
-          fprintf(arquivo, "%d/%d\t", matrizresultante[j][i].numerador,
+          fprintf(arquivo, "%5d/%-5d\t", matrizresultante[j][i].numerador,
                   matrizresultante[j][i].denominador);  // Troca de índices para transposta
         }
 
@@ -1110,19 +1110,19 @@ void gravaMatrizesEmTxt(Fracao **matriz1, Fracao **matriz2,
     } else if (opc == 'D') {  // Operação Determinante
       fprintf(arquivo, "\n\t::VALOR DA DETERMINANTE::\n");
       Fracao det = determinante(matriz1, linhas);  // Função de cálculo de determinante
-      fprintf(arquivo, "Determinante: %d/%d\n", det.numerador, det.denominador);
+      fprintf(arquivo, "Determinante: %5d/%-5d\n", det.numerador, det.denominador);
     } else {  // Outras operações
       fprintf(arquivo, "\n\t::VALORES DAS MATRIZES::\n");
       for (int i = 0; i < linhas; i++) {
         for (int j = 0; j < colunas; j++) {
-          fprintf(arquivo, "%d/%d\t", matriz1[i][j].numerador,
+          fprintf(arquivo, "%5d/%-5d\t", matriz1[i][j].numerador,
                   matriz1[i][j].denominador);
         }
 
         fprintf(arquivo, "=\t");
 
         for (int j = 0; j < colunas; j++) {
-          fprintf(arquivo, "%d/%d\t", matrizresultante[i][j].numerador,
+          fprintf(arquivo, "%5d/%-5d\t", matrizresultante[i][j].numerador,
                   matrizresultante[i][j].denominador);
         }
 
