@@ -5,6 +5,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <ctype.h>
+#include <locale.h>
 
 typedef struct Fracao {
   int numerador;
@@ -34,7 +35,7 @@ void menuinicial(pessoa pessoas[], int usuariologado);
 
 // ---------- Principal ----------
 void printMatriz(Fracao **matriz, int linhas, int colunas);
-void transoposta(Fracao **matriz, int linhas, int colunas);
+void transposta(Fracao **matriz, int linhas, int colunas);
 void soma(pessoa pessoas[], int usuariologado);
 void inversa(pessoa pessoas[],int usuariologado);
 void sub(pessoa pessoas[], int usuariologado);
@@ -49,6 +50,8 @@ void limpaterminal();
 void espera();
 void limpabuffer();
 int verificaCPF(char *cpf);
+void verifica_linhas(int *linhas_rece, int *colunas_rece);
+void verifica_ordens(int *n);
 
 //---------- TXT e Binário ----------
 int arquivoexiste(const char *filename);
@@ -64,6 +67,7 @@ void gravaSistemaEmTxt(Fracao **equacoes, Fracao *independentes, Fracao *solucoe
 //---------- Cria matrizes ----------
 void cria_matriz(Fracao ***matriz, int linhas, int colunas, int segunda_matriz, int mesma_ordem);
 void free_matriz(Fracao **matriz, int linhas);
+void cria_submatriz(Fracao ***matriz, int linhas, int colunas);
 
 
 #endif

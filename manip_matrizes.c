@@ -1,8 +1,4 @@
 #include "manip_matrizes.h"
-#include <ctype.h>
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
 
 // Função para simplificar a fração
 Fracao simplificar(Fracao f) {
@@ -14,9 +10,11 @@ Fracao simplificar(Fracao f) {
   } else {
     f.numerador /= divisor_comum;
     f.denominador /= divisor_comum;
-    if (f.denominador < 0) {
-      f.numerador = -1 * f.numerador;
-    }
+  }
+
+  if (f.denominador < 0 && f.numerador > 0) {
+    f.numerador = -1 * f.numerador;
+    f.denominador = -1 * f.denominador;
   }
   return f;
 }
@@ -59,22 +57,53 @@ Fracao multiplicar(Fracao a, Fracao b) {
 Fracao lerFracao() {
   Fracao f;
   char frac[20];
+  int numbarra = 0;  // para contar o número de barras na entrada
+  int valida = 0;  // para verificar se a entrada foi válida
 
-  // Tenta ler a fração (numerador/denominador) ou inteiro
-  scanf("%s", frac);
+  while (!valida) {
+    printf("Digite uma fração (EX: 3/4) ou um número inteiro: ");
+    scanf("%s", frac);
 
-  // Tenta analisar a entrada como uma fração
-  if (sscanf(frac, "%d/%d", &f.numerador, &f.denominador) == 2) { // Genial
-    // Se a fração for válida
-    if (f.denominador == 0) {
-      printf("Denominador não pode ser zero.\n");
-      f.denominador = 1;
+    // Verificar se há barras barras ou vírgulas
+    numbarra = 0;
+    for (int i = 0; i < strlen(frac); i++) {
+      if (frac[i] == '/') {
+        numbarra++;
+      }
+      if (frac[i] == ',' || (!isdigit(frac[i]) && frac[i] != '/' && frac[i] != '-')) {
+        printf("Use apenas números inteiros ou frações no formato a/b, tente novamente\n");
+        numbarra = 2; 
+        break;
+      }
     }
-  } else {
-    // Se não for uma fração, leia como número inteiro
-    f.numerador = atoi(frac); // Converte de string pra numero
-    f.denominador = 1;
+
+    if (numbarra > 1) {
+      printf("Digite a fração no formato a/b, tente novamente\n");
+      continue;
+    }
+
+    // Tentar analisar como fração
+    if (numbarra == 1) {
+      if (sscanf(frac, "%d/%d", &f.numerador, &f.denominador) == 2) {
+        if (f.denominador == 0) {
+          printf("O denominador não pode ser zero.\n");
+          continue;
+        }
+        valida = 1;  // entrada válida
+      } else {
+        printf("Entrada de fração inválida.\n");
+      }
+    } else {
+      // Tentar analisar como número inteiro
+      if (sscanf(frac, "%d", &f.numerador) == 1) {
+        f.denominador = 1;
+        valida = 1;  // entrada válida
+      } else {
+        printf("Entrada de número inválida.\n");
+      }
+    }
   }
+
   return simplificar(f);
 }
 
@@ -120,14 +149,29 @@ void printMatriz(Fracao **matriz, int linhas, int colunas) {
 }
 
 // Funçao que mostra a da matriz
-void transoposta(Fracao **matriz, int linhas, int colunas) {
-  for (int i = 0; i < linhas; i++) {
-    for (int j = 0; j < colunas; j++) {
-      imprimirFracao(matriz[j][i]);
+void transposta(Fracao **matriz, int linhas, int colunas) {
+    Fracao **matriztra;
+    cria_submatriz(&matriztra, linhas, colunas);
+    
+    for (int i = 0; i < colunas; i++) {
+        for (int j = 0; j < linhas; j++) {
+            matriztra[i][j] = matriz[j][i];
+        }
     }
-    printf("\n");
-  }
-  return;
+
+    for (int i = 0; i < colunas; i++) {
+        for (int j = 0; j < linhas; j++) {
+            imprimirFracao(matriztra[i][j]);
+        }
+        printf("\n");
+    }
+
+    for(int i = 0; i < colunas; i++) {
+        free(matriztra[i]);
+    }
+    free(matriztra);
+    
+    return;
 }
 
 // Função soma de matrizes
@@ -136,10 +180,7 @@ void soma(pessoa pessoas[], int usuariologado) {
   Fracao **matriz2;
   int linhas, colunas;
 
-  printf("Digite o número de linhas: ");
-  scanf("%d", &linhas);
-  printf("Digite o número de colunas: ");
-  scanf("%d", &colunas);
+  verifica_linhas(&linhas, &colunas);
 
   cria_matriz(&matriz, linhas, colunas, 0, 1);
   cria_matriz(&matriz2, linhas, colunas, 1, 1);
@@ -164,12 +205,7 @@ void soma(pessoa pessoas[], int usuariologado) {
   limpabuffer();
   espera();
 
-  // Liberação de memória
-  for (int i = 0; i < linhas; i++) {
-    free(matrizresultante[i]);
-  }
-  free(matrizresultante);
-
+  free_matriz(matrizresultante, linhas);
   free_matriz(matriz2, linhas);
   free_matriz(matriz, linhas);
 }
@@ -180,10 +216,7 @@ void sub(pessoa pessoas[], int usuariologado) {
   Fracao **matriz2;
   int linhas, colunas;
 
-  printf("Digite o número de linhas: ");
-  scanf("%d", &linhas);
-  printf("Digite o número de colunas: ");
-  scanf("%d", &colunas);
+  verifica_linhas(&linhas, &colunas);
 
   cria_matriz(&matriz, linhas, colunas, 0, 1);
   cria_matriz(&matriz2, linhas, colunas, 1, 1);
@@ -208,34 +241,28 @@ void sub(pessoa pessoas[], int usuariologado) {
   limpabuffer();
   espera();
 
-  // Liberação de memória
-  for (int i = 0; i < linhas; i++) {
-    free(matrizresultante[i]);
-  }
-  free(matrizresultante);
-
+  free_matriz(matrizresultante, linhas);
   free_matriz(matriz2, linhas);
   free_matriz(matriz, linhas);
 }
 
 // Funcao que realiza multiplicação de matrizes
 void multi(pessoa pessoas[], int usuariologado) {
+  
   int linhas, colunas;
-  printf("Digite o número de linhas da PRIMEIRA matriz: ");
-  scanf("%d", &linhas);
-  printf("Digite o número de colunas da PRIMEIRA matriz: ");
-  scanf("%d", &colunas);
-
+  printf("Digite o número de linhas e colunas da PRIMEIRA matriz a seguir \n");
+  verifica_linhas(&linhas, &colunas);
+  
   int linhas2, colunas2;
-  printf("Digite o número de linhas da SEGUNDA matriz: ");
-  scanf("%d", &linhas2);
-  printf("Digite o número de colunas da SEGUNDA matriz: ");
-  scanf("%d", &colunas2);
+  printf("Digite o número de linhas e colunas da SEGUNDA matriz a seguir \n");
+  verifica_linhas(&linhas2, &colunas2);
 
   if (colunas != linhas2) {
     printf(
         "Multiplicação de matrizes inválida! O número de colunas da primeira "
         "matriz deve ser igual ao número de linhas da segunda matriz.\n");
+        limpabuffer();
+        espera();
     return;
   }
 
@@ -245,10 +272,8 @@ void multi(pessoa pessoas[], int usuariologado) {
   cria_matriz(&matriz, linhas, colunas, 0, 1);
   cria_matriz(&matriz2, linhas2, colunas2, 1, 1);
 
-  Fracao **matrizresultante = (Fracao **)malloc(linhas * sizeof(Fracao *));
-  for (int i = 0; i < linhas; i++) {
-    matrizresultante[i] = malloc(colunas2 * sizeof(Fracao));
-  }
+  Fracao **matrizresultante;
+  cria_submatriz(&matrizresultante, linhas, colunas2);
 
   // Multiplicação
   for (int i = 0; i < linhas; i++) {
@@ -270,97 +295,85 @@ void multi(pessoa pessoas[], int usuariologado) {
   limpabuffer();
   espera();
 
-  // Liberação de memória
-  for (int i = 0; i < linhas; i++) {
-    free(matrizresultante[i]);
-  }
-  free(matrizresultante);
-
+  free_matriz(matrizresultante, linhas);
   free_matriz(matriz2, linhas);
   free_matriz(matriz, linhas);
 }
 
 // Função para calcular o determinante
 Fracao determinante(Fracao **matriz, int n) {
+    Fracao det = fracPadrao();  // Inicia com 0
+    Fracao somatorio = fracPadrao();  // Variável para acumular o determinante
 
-  Fracao det = fracPadrao();
+    if (n == 1) {
+        return matriz[0][0]; 
+    } else if (n == 2) {
+        // Caso base, determinante de matriz 2x2
+        return subtrair(multiplicar(matriz[0][0], matriz[1][1]),
+                        multiplicar(matriz[0][1], matriz[1][0]));
+    } else {
+        for (int x = 0; x < n; x++) {
+            // Alocando submatriz de tamanho (n-1)x(n-1)
+            Fracao **submatriz;
+            cria_submatriz(&submatriz, n-1, n-1);
 
-  if (n == 1) {
-    return matriz[0][0];
-  } else if (n == 2) {
-    return subtrair(multiplicar(matriz[0][0], matriz[1][1]),
-                    multiplicar(matriz[0][1], matriz[1][0]));
-  } else {
-    for (int x = 0; x < n; x++) {
-      Fracao **submatriz = (Fracao **)malloc((n - 1) * sizeof(Fracao *));
-      for (int i = 0; i < n - 1; i++) {
-        submatriz[i] = malloc((n - 1) * sizeof(Fracao));
-      }
+            for (int i = 1; i < n; i++) {
+                int subi = 0;
+                for (int j = 0; j < n; j++) {
+                    if (j == x) {
+                        continue;  // Pula a coluna que está sendo excluída
+                    }
+                    submatriz[i - 1][subi] = matriz[i][j];
+                    subi++;
+                }
+            }
+            // det += (x % 2 == 0 ? 1 : -1) * matriz[0][x] * determinante(submatriz, n
+            // - 1); // Vou reduzindo ate ficar 2:2
 
-      for (int i = 1; i < n;
-           i++) { // inicia com 1 pra não copiar a linha errada para submatriz
-                  // da pra fazer sem soq da mais trabalho
-        int subi = 0;
-        for (int j = 0; j < n; j++) {
-          if (j == x) { // Ve se nao ta usando uma coluna qur vai ser excluida
-            continue;
-          }
-          submatriz[i - 1][subi] = matriz[i][j];
-          subi++;
+            Fracao cofactor;
+            if (x % 2 == 0) {
+                cofactor = multiplicar(matriz[0][x], determinante(submatriz, n - 1));
+            } else {
+                cofactor = multiplicar(frac_unitaria_Negativa(), multiplicar(matriz[0][x], determinante(submatriz, n - 1)));
+            }
+
+            // Somando o cofactor 
+            somatorio = somar(somatorio, cofactor);
+            
+            free_matriz(submatriz, n-1);
         }
-      }
-
-      if (x % 2 == 0) {
-        det = somar(
-            multiplicar(multiplicar(frac_unitaria_Positiva(), matriz[0][x]),
-                        determinante(submatriz, n - 1)),
-            fracPadrao());
-      } else {
-        det = somar(
-            multiplicar(multiplicar(frac_unitaria_Negativa(), matriz[0][x]),
-                        determinante(submatriz, n - 1)),
-            fracPadrao());
-      }
-      // det += (x % 2 == 0 ? 1 : -1) * matriz[0][x] * determinante(submatriz, n
-      // - 1); // Vou reduzindo ate ficar 2:2
-
-      for (int i = 0; i < n - 1; i++) {
-        free(submatriz[i]);
-      }
-      free(submatriz);
     }
-  }
-  return det;
+
+    return somatorio;
 }
 
 // Função para calcular a inversa
 void inversa(pessoa pessoas[], int usuariologado) {
   Fracao **matriz;
   int n;
-  printf("Digite a ordem da matriz: ");
-  scanf("%d", &n);
+
+  printf("Digite a ordem da matriz a seguir: \n");
+  verifica_ordens(&n);
   cria_matriz(&matriz, n, n, 0, 1);
 
   Fracao det = determinante(matriz, n);
   if (comparar(determinante(matriz, n), fracPadrao()) == 0) {
     printf("Matriz não tem inversa (determinante é zero).\n");
+    limpabuffer();
+    espera();
     return;
   }
 
-  Fracao **inversa = (Fracao **)malloc(n * sizeof(Fracao *));
-  Fracao **cofatores = (Fracao **)malloc(n * sizeof(Fracao *));
+  Fracao **inversa;
+  Fracao **cofatores;
 
-  for (int i = 0; i < n; i++) {
-    inversa[i] = malloc(n * sizeof(Fracao));
-    cofatores[i] = malloc(n * sizeof(Fracao));
-  }
+  cria_submatriz(&inversa, n, n);
+  cria_submatriz(&cofatores, n, n);
 
   for (int i = 0; i < n; i++) {
     for (int j = 0; j < n; j++) {
-      Fracao **submatriz = (Fracao **)malloc((n - 1) * sizeof(Fracao *));
-      for (int x = 0; x < n - 1; x++) {
-        submatriz[x] = malloc((n - 1) * sizeof(Fracao));
-      }
+      Fracao **submatriz;
+      cria_submatriz(&submatriz, n-1, n-1);
 
       int subi = 0;
       for (int a = 0; a < n; a++) {
@@ -387,10 +400,7 @@ void inversa(pessoa pessoas[], int usuariologado) {
       // cofatores[i][j] = (float)((i + j) % 2 == 0 ? 1 : -1) *
       // determinante(submatriz, n - 1);
 
-      for (int x = 0; x < n - 1; x++) {
-        free(submatriz[x]);
-      }
-      free(submatriz);
+      free_matriz(submatriz, n-1);
     }
   }
 
@@ -408,14 +418,8 @@ void inversa(pessoa pessoas[], int usuariologado) {
   limpabuffer();
   espera();
 
-  // Liberação de memória
-  for (int i = 0; i < n; i++) {
-    free(inversa[i]);
-    free(cofatores[i]);
-  }
-  free(inversa);
-  free(cofatores);
-
+  free_matriz(cofatores, n);
+  free_matriz(inversa, n);
   free_matriz(matriz, n);
 }
 
@@ -423,20 +427,15 @@ void inversa(pessoa pessoas[], int usuariologado) {
 void decomposicaoLU(pessoa pessoas[], int usuariologado) {
   Fracao **matriz;
   int n;
-  printf("Digite o a ordem da matriz que deseja decompor: ");
-  scanf("%d", &n);
-
+  printf("Digite a ordem da matriz a seguir");
+  verifica_ordens(&n);
   cria_matriz(&matriz, n, n, 0, 1);
 
-  Fracao **matrizL = (Fracao **)malloc(n * sizeof(Fracao *));
-  Fracao **matrizU = (Fracao **)malloc(n * sizeof(Fracao *));
+  Fracao **matrizL;
+  Fracao **matrizU;
 
-  for (int i = 0; i < n; i++) {
-    matrizL[i] = malloc(n * sizeof(Fracao));
-  }
-  for (int i = 0; i < n; i++) {
-    matrizU[i] = malloc(n * sizeof(Fracao));
-  }
+  cria_submatriz(&matrizL, n, n);
+  cria_submatriz(&matrizU, n, n);
 
   for (int i = 0; i < n; i++) {
     for (int j = 0; j < n; j++) {
@@ -469,25 +468,17 @@ void decomposicaoLU(pessoa pessoas[], int usuariologado) {
       }
     }
   }
-  printf("-------------Matriz U-------------\n");
+  printf("Matriz U: \n");
   printMatriz(matrizU, n, n);
-  printf("-------------Matriz L-------------\n");
+  printf("Matriz L: \n");
   printMatriz(matrizL, n, n);
   gravaMatrizesEmTxt(matriz, matrizU, matrizL, n, n,
-   usuariologado, pessoas, 'D');
+  usuariologado, pessoas, 'D');
   limpabuffer();
   espera();
 
-  // Liberação de memória
-  for (int i = 0; i < n; i++) {
-    free(matrizL[i]);
-  }
-  for (int i = 0; i < n; i++) {
-    free(matrizU[i]);
-  }
-  free(matrizL);
-  free(matrizU);
-
+  free_matriz(matrizU, n);
+  free_matriz(matrizL, n);
   free_matriz(matriz, n);
 }
 
@@ -640,6 +631,8 @@ void sistemalinear(pessoa pessoas[], int usuariologado) {
   if (icognitas > eqs) {
     printf("O sistema é SPI (Sistema Possível Indeterminado) ou  SI (Sistema "
            "Impossível)\n");
+           limpabuffer();
+           espera();
     return;
   }
 
@@ -708,10 +701,7 @@ void sistemalinear(pessoa pessoas[], int usuariologado) {
   espera();
 
   // Liberação da memória
-  for (int i = 0; i < eqs; i++) {
-    free(equacoes[i]);
-  }
-  free(equacoes);
+  free_matriz(equacoes, eqs);
   free(independentes);
   free(solucoes);
 }
@@ -740,37 +730,34 @@ void menu(pessoa pessoas[], int usuariologado) {
          "|+|--------------------------------------\n");
 
   Fracao **matriz;
-  int linhas, colunas;
+  int linhas, colunas, n;
 
   while (condicao) {
-    char opc;
-    scanf(" %c", &opc);
+    int opc;
+    scanf(" %d", &opc);
     limpabuffer();
 
     switch (opc) {
-    case '1':
+    case 1:
       soma(pessoas, usuariologado);
       menu(pessoas, usuariologado);
       break;
-    case '2':
+    case 2:
       sub(pessoas, usuariologado);
       menu(pessoas, usuariologado);
       break;
-    case '3':
+    case 3:
       multi(pessoas, usuariologado);
       menu(pessoas, usuariologado);
       break;
-    case '4':
+    case 4:
       inversa(pessoas, usuariologado);
       menu(pessoas, usuariologado);
       break;
-    case '5':
-      printf("Digite o número de linhas da Matriz: \n");
-      scanf("%d", &linhas);
-      printf("Digite o número de colunas da Matriz: \n");
-      scanf("%d", &colunas);
+    case 5:
+      verifica_linhas(&linhas, &colunas);
       cria_matriz(&matriz, linhas, colunas, 0, 1);
-      transoposta(matriz, linhas, colunas);
+      transposta(matriz, linhas, colunas);
       gravaMatrizesEmTxt(matriz, NULL, matriz, linhas, colunas, usuariologado,
                          pessoas, 'T');
       limpabuffer();
@@ -778,15 +765,14 @@ void menu(pessoa pessoas[], int usuariologado) {
       free_matriz(matriz, linhas);
       menu(pessoas, usuariologado);
       break;
-    case '6':
-      printf("Digite a ordem da matriz: ");
-      scanf("%d", &linhas);
-      colunas = linhas;
-      cria_matriz(&matriz, linhas, colunas, 0, 1);
+    case 6:
+      printf("Digite a ordem da matriz a seguir");
+      verifica_ordens(&n);
+      cria_matriz(&matriz, n, n, 0, 1);
       Fracao det = determinante(matriz, linhas);
       gravaMatrizesEmTxt(matriz, NULL, NULL, linhas, colunas, usuariologado,
                          pessoas, 'D');
-      printf("O determinante da matriz digitada é:");
+      printf("O determinante da matriz digitada é: ");
       imprimirFracao(det);
       printf("/n");
       limpabuffer();
@@ -794,24 +780,24 @@ void menu(pessoa pessoas[], int usuariologado) {
       free_matriz(matriz, linhas);
       menu(pessoas, usuariologado);
       break;
-    case '7':
+    case 7:
       decomposicaoLU(pessoas, usuariologado);
       menu(pessoas, usuariologado);
       break;
-    case '8':
+    case 8:
       sistemalinear(pessoas, usuariologado);
       menu(pessoas, usuariologado);
       break;
-    case '9':
+    case 9:
       lerhistorico(usuariologado, pessoas);
       menu(pessoas, usuariologado);
       break;
-    case '0':
+    case 0:
       condicao = 0;
       menuinicial(pessoas, usuariologado);
       break;
     default:
-      printf("Opçao inválida, tente novamente");
+      printf("Opçao inválida, tente novamente\n");
       break;
     }
   }
@@ -903,6 +889,15 @@ void free_matriz(Fracao **matriz, int linhas) {
   }
   free(matriz);
 }
+
+// funcao que armazena na memoria a submatriz
+void cria_submatriz(Fracao ***matriz, int linhas, int colunas){
+  *matriz = (Fracao **)malloc(linhas * sizeof(Fracao *));
+  for (int i = 0; i < linhas; i++) {
+    (*matriz)[i] = (Fracao *)malloc(colunas * sizeof(Fracao));
+  }
+}
+
 // ---------------------------------------- Funções Auxiliares
 // ----------------------------------------
 
@@ -980,6 +975,43 @@ int verificaCPF(char *cpf) {
       return 0;
     }
   }
+}
+
+void verifica_linhas(int *linhas_rece, int *colunas_rece){
+  while (1){
+    int linhas, colunas;
+    printf("Digite o número de linhas: ");
+    scanf("%d", &linhas);
+    printf("Digite o número de colunas: ");
+    scanf("%d", &colunas);
+    if(linhas <= 0 || colunas <= 0){
+      printf("Numeros inválidos, devem ser maiores que zero\n");
+      limpabuffer();
+      espera();
+    }else{
+      (*linhas_rece) = linhas;
+      (*colunas_rece) = colunas;
+      break;
+    }
+  }
+  return;
+}
+
+void verifica_ordens(int *n){
+  while (1){
+    int ordem;
+    printf("Digite o número da ordem: ");
+    scanf("%d", &ordem);
+    if(ordem <= 0){
+      printf("Numero inválido, deve ser maior que zero\n");
+      limpabuffer();
+      espera();
+    }else{
+      (*n) = ordem;
+      break;
+    }
+  }
+  return;
 }
 
 // ---------------------------------------- Funções Relacionadas a Frações
