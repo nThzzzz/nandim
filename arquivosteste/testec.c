@@ -1,8 +1,52 @@
-#include "manip_matrizes.h"
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include <ctype.h>
+
+typedef struct Fracao {
+  int numerador;
+  int denominador;
+} Fracao;
+
+typedef struct {
+  char CPF[12];
+  char senha[7];
+  char nome[100];
+} pessoa;
+
+// ----- Fração -----
+Fracao simplificar(Fracao f);
+Fracao somar(Fracao a, Fracao b);
+Fracao subtrair(Fracao a, Fracao b);
+void imprimirFracao(Fracao f);
+Fracao lerFracao();
+int mdc(int a, int b);
+int comparar(Fracao a, Fracao b);
+
+// ---------- Menus ---------
+void menu(pessoa pessoas[], int usuariologado);
+void menuinicial(pessoa pessoas[], int usuariologado);
+
+// ---------- Principal ----------
+void printMatriz(Fracao **matriz, int linhas, int colunas);
+void transoposta(Fracao **matriz, int linhas, int colunas);
+void soma();
+void sub();
+void login(pessoa pessoas[], int usuariologado);
+void cadastrar(pessoa pessoas[], int usuariologado);
+
+//---------- Aux ----------
+void limpaterminal();
+void espera();
+void limpabuffer();
+int verificaCPF(char *cpf);
+int arquivoexiste(const char *filename);
+void escrever(pessoa pessoas[], int quantidade);
+void ler(FILE *file, pessoa pessoas[], int quantidade);
+
+//---------- Cria matrizes ----------
+void cria_matriz(Fracao ***matriz, int linhas, int colunas, int segunda_matriz, int mesma_ordem);
+void free_matriz(Fracao **matriz, int linhas);
 
 // Função para simplificar a fração
 Fracao simplificar(Fracao f) {
@@ -87,7 +131,6 @@ Fracao fracPadrao() {
   return simplificar(f);
 }
 
-// Fracao que equivale a 1
 Fracao frac_unitaria_Positiva() {
   Fracao f;
   f.numerador = 1;
@@ -95,7 +138,6 @@ Fracao frac_unitaria_Positiva() {
   return simplificar(f);
 }
 
-// Fracao que vale a -1
 Fracao frac_unitaria_Negativa() {
   Fracao f;
 
@@ -103,6 +145,23 @@ Fracao frac_unitaria_Negativa() {
   f.denominador = 1;
 
   return simplificar(f);
+}
+
+int main() {
+  FILE *file;
+  pessoa pessoas[10];
+  int verificacao;
+  int usuariologado = -1;
+  verificacao = arquivoexiste("dados.bin");
+  if (verificacao == 0) { // O arquivo existe
+    escrever(pessoas, 10);
+  } else {
+    ler(&file, pessoas, 10);
+  }
+  printf("%d\n", verificacao);
+  menuinicial(pessoas, usuariologado);
+
+  return 0;
 }
 
 // ------------------------------------- Funções Principais -------------------------------------
@@ -117,7 +176,6 @@ void printMatriz(Fracao **matriz, int linhas, int colunas) {
   }
 }
 
-// Funçao que mostra a da matriz
 void transoposta(Fracao **matriz, int linhas, int colunas) {
   for (int i = 0; i < linhas; i++) {
     for (int j = 0; j < colunas; j++) {
@@ -154,7 +212,6 @@ void soma() {
         }
     }
 
-    limpaterminal();
     printf("A matriz RESULTANTE da soma é: \n");
     printMatriz(matrizresultante, linhas, colunas);
     limpabuffer();
@@ -170,7 +227,6 @@ void soma() {
     free_matriz(matriz, linhas);
 }
 
-// Funcao que subtrai matrizes
 void sub() {
     Fracao **matriz;
     Fracao **matriz2;
@@ -195,8 +251,7 @@ void sub() {
             matrizresultante[i][j] = subtrair(matriz[i][j], matriz2[i][j]);
         }
     }
-    
-    limpaterminal();
+
     printf("A matriz RESULTANTE da soma é: \n");
     printMatriz(matrizresultante, linhas, colunas);
     limpabuffer();
@@ -212,7 +267,6 @@ void sub() {
     free_matriz(matriz, linhas);
 }
 
-// Funcao que realiza multiplicação de matrizes
 void multi() {
     int linhas, colunas;
     printf("Digite o número de linhas da PRIMEIRA matriz: ");
@@ -251,8 +305,7 @@ void multi() {
             }
         }
     }
-    
-    limpaterminal();
+
    //Exibe a matriz resultante
     printf("A matriz resultante da multiplicação é: \n");
     printMatriz(matrizresultante, linhas, colunas2);
@@ -376,7 +429,6 @@ void inversa() {
         }
     }
 
-    limpaterminal();
     printf("A matriz inversa é:\n");
     printMatriz(inversa, n, n);
     limpabuffer();
@@ -393,7 +445,6 @@ void inversa() {
     free_matriz(&matriz, n);
 }
 
-// Funcao que decompoe uma matriz no modelo L e U
 void decomposicaoLU(){
     Fracao **matriz;
     int n;
@@ -426,7 +477,6 @@ void decomposicaoLU(){
         }
     }
 
-    limpaterminal();
     // Fatoração LU
     for (int k = 0; k < n - 1; k++) {
         for (int i = k + 1; i < n; i++) {
@@ -461,7 +511,6 @@ void decomposicaoLU(){
     free_matriz(matriz, n);
 }
 
-// Funçao responsavel pelo login do usuario
 void login(pessoa pessoas[], int usuariologado) {
   limpaterminal();
   char cpflogin[12];
@@ -511,7 +560,6 @@ void login(pessoa pessoas[], int usuariologado) {
   menuinicial(pessoas, usuariologado); 
 }
 
-// Funcao que cadastra os usuários
 void cadastrar(pessoa pessoas[], int usuariologado) {
   limpaterminal();
   char cpfcadastro[12];
@@ -592,106 +640,14 @@ void cadastrar(pessoa pessoas[], int usuariologado) {
   }
 }
 
-void sistemalinear() {
-    int icognitas, eqs;
-
-    char letras[26] = {'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M', 'N', 'O', 'P', 'Q', 'R', 'S', 'T', 'U', 'V', 'W', 'X', 'Y', 'Z' };
-
-    printf("Digite o número de incógnitas do sistema: ");
-    scanf("%d", &icognitas);
-    printf("Digite o número de equações do sistema: ");
-    scanf("%d", &eqs);
-
-    if (icognitas > eqs) {
-        printf("O sistema é SPI (Sistema Possível Indeterminado) ou  SI (Sistema Impossível)\n");
-        return;
-    }
-
-    // Alocação das equações e termos independentes
-    Fracao** equacoes = (Fracao**)malloc(eqs * sizeof(Fracao*));
-    for (int i = 0; i < eqs; i++) {
-        equacoes[i] = (Fracao*)malloc(icognitas * sizeof(Fracao));
-    }
-
-    Fracao* independentes = (Fracao*)malloc(eqs * sizeof(Fracao));
-
-    // Leitura dos coeficientes
-    printf("Digite os coeficientes das equações:\n");
-    for (int i = 0; i < eqs; i++) {
-        for (int j = 0; j < icognitas; j++) {
-            printf("Coeficiente de %c da %dºEquação: ", letras[j], i+1);
-            equacoes[i][j] = lerFracao();
-        }
-        printf("Termo independente da %dºEquação: ", i + 1);
-        independentes[i] = lerFracao();
-    }
-
-    // Eliminação de Gauss
-    for (int i = 0; i < icognitas; i++) {
-        // Pivô
-        Fracao piv = equacoes[i][i];
-        for (int j = i; j < icognitas; j++) {
-            equacoes[i][j] = dividir(equacoes[i][j], piv);
-        }
-        independentes[i] = dividir(independentes[i], piv);
-
-        // Eliminação abaixo da diagonal
-        for (int k = i + 1; k < eqs; k++) {
-            Fracao fator = equacoes[k][i];
-            for (int j = i; j < icognitas; j++) {
-                equacoes[k][j] = subtrair(equacoes[k][j], multiplicar(fator, equacoes[i][j]));
-            }
-            independentes[k] = subtrair(independentes[k], multiplicar(fator, independentes[i]));
-        }
-    }
-
-    // Substituição retroativa
-    Fracao* solucoes = (Fracao*)malloc(icognitas * sizeof(Fracao));
-    
-    for (int i = icognitas - 1; i >= 0; i--) {
-        solucoes[i] = independentes[i];
-        for (int j = i + 1; j < icognitas; j++) {
-            solucoes[i] = subtrair(solucoes[i], multiplicar(equacoes[i][j], solucoes[j]));
-        }
-    }
-
-    limpaterminal();
-    // Exibe as soluções
-    printf("Soluções do sistema:\n");
-    for (int i = 0; i < icognitas; i++) {
-        printf("%c =", letras[i]);
-        imprimirFracao(solucoes[i]);
-        printf("\n");
-    }
-    limpabuffer();
-    espera();
-
-    // Liberação da memória
-    for (int i = 0; i < eqs; i++) {
-        free(equacoes[i]);
-    }
-    free(equacoes);
-    free(independentes);
-    free(solucoes);
-}
 
 // ------------------------------------- Funções Menus -------------------------------------
 
-// Funcao que apresenta o menu ao usuario
 void menu(pessoa pessoas[], int usuariologado) {
   int condicao = 1;
   limpaterminal();
   printf("--------------------------------------|+| CALCULADORA 2 |+|--------------------------------------\n");
-  printf("Qual operação deseja realizar: \n");
-  printf("Soma\t\t\t-\t(1)\n");
-  printf("Subtração\t\t-\t(2)\n");
-  printf("Multiplicação\t\t-\t(3)\n");
-  printf("Inversa\t\t\t-\t(4)\n");
-  printf("Transposta\t\t-\t(5)\n");
-  printf("Determinante\t\t-\t(6)\n");
-  printf("Decomposição LU\t\t-\t(7)\n");
-  printf("Resolução de Sistemas\t-\t(8)\n");
-  printf("Sair\t\t\t-\t(0)\n");
+  printf("Qual operação deseja realizar: \nSoma\t\t-\t(1)\nSubtração\t-\t(2)\nMultiplicação\t-\t(3)\nInversa\t\t-\t(4)\nTransposta\t-\t(5)\nDeterminante\t-\t(6)\nDecomposição LU\t-\t(7)\n");
   printf("--------------------------------------|+| CALCULADORA 2 |+|--------------------------------------\n");
 
   Fracao **matriz;
@@ -749,22 +705,14 @@ void menu(pessoa pessoas[], int usuariologado) {
       decomposicaoLU();
       menu(pessoas, usuariologado);
       break;
-    case '8':
-      sistemalinear();
-      menu(pessoas, usuariologado);
-      break;
-    case '0':
-    condicao = 0;
-      menuinicial(pessoas, usuariologado);
-      break;  
     default:
-      printf("Opçao inválida, tente novamente");
+      condicao = 0;
+      menuinicial(pessoas, usuariologado);
       break;
     }
   }
 }
 
-// Funcao que mostra o menu inicial ao usuario
 void menuinicial(pessoa pessoas[], int usuariologado) {
   limpaterminal();
   char opc;
@@ -798,7 +746,6 @@ void menuinicial(pessoa pessoas[], int usuariologado) {
 
 // ---------------------------------------- Funções de criação de Matrizes ----------------------------------------
 
-// Funcao que cria e armazena na memoria a uma matriz
 void cria_matriz(Fracao ***matriz, int linhas, int colunas, int segunda_matriz, int mesma_ordem) {
     *matriz = (Fracao **)malloc(linhas * sizeof(Fracao *));
     for (int i = 0; i < linhas; i++) {
@@ -848,7 +795,6 @@ void free_matriz(Fracao **matriz, int linhas) {
 }
 // ---------------------------------------- Funções Auxiliares ----------------------------------------
 
-// Funcao que limpa o terminal pro usuario
 void limpaterminal() {
   system("cls || clear")
       /*printf("teste")*/;
@@ -860,7 +806,6 @@ void espera() {
   limpabuffer();
 }
 
-// Funcao que limpa o buffer de entrada
 void limpabuffer() {
   int c = 0;
   while ((c = getchar()) != '\n' && c != EOF) {
@@ -868,7 +813,6 @@ void limpabuffer() {
   return;
 }
 
-// Funcao que verifica se o CPF é válido
 int verificaCPF(char *cpf) {
   int numeros_cpf[11];
   int soma = 0;
@@ -924,7 +868,6 @@ int verificaCPF(char *cpf) {
   }
 }
 
-// Funcao que verifia de o binario ja foi criado ou nao
 int arquivoexiste(const char *filename) {
   FILE *file = fopen(filename, "r");
   if (file != NULL) {
@@ -934,7 +877,6 @@ int arquivoexiste(const char *filename) {
   return 0; // Arquivo não existe
 }
 
-// Funcao que escreve no binario
 void escrever(pessoa pessoas[], int quantidade) {
   FILE *file = fopen("dados.bin", "wb");
 
@@ -960,7 +902,6 @@ int mdc(int a, int b) {
   return mdc(b, a % b);
 }
 
-// Compara 2 fracoes
 int comparar(Fracao a, Fracao b) {
   if (a.numerador == b.numerador && a.denominador == b.denominador) {
     return 0;
