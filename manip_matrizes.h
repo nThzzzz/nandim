@@ -35,7 +35,7 @@ void menuinicial(pessoa pessoas[], int usuariologado);
 
 // ---------- Principal ----------
 void printMatriz(Fracao **matriz, int linhas, int colunas);
-void transposta(Fracao **matriz, int linhas, int colunas);
+void transposta(Fracao **matriz, int linhas, int colunas,pessoa pessoas[],int usuariologado);
 void soma(pessoa pessoas[], int usuariologado);
 void inversa(pessoa pessoas[],int usuariologado);
 void sub(pessoa pessoas[], int usuariologado);
