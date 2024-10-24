@@ -149,7 +149,7 @@ void printMatriz(Fracao **matriz, int linhas, int colunas) {
 }
 
 // Funçao que mostra a da matriz
-void transposta(Fracao **matriz, int linhas, int colunas) {
+void transposta(Fracao **matriz, int linhas, int colunas,pessoa pessoas[], int usuariologado) {
     Fracao **matriztra;
     cria_submatriz(&matriztra, linhas, colunas);
     
@@ -165,7 +165,7 @@ void transposta(Fracao **matriz, int linhas, int colunas) {
         }
         printf("\n");
     }
-
+	 gravaMatrizesEmTxt(matriz, NULL, matriztra, linhas, colunas, usuariologado, pessoas, 'T');
     for(int i = 0; i < colunas; i++) {
         free(matriztra[i]);
     }
@@ -196,7 +196,7 @@ void soma(pessoa pessoas[], int usuariologado) {
       matrizresultante[i][j] = somar(matriz[i][j], matriz2[i][j]);
     }
   }
-  gravaMatrizesEmTxt(matriz, matriz2, matrizresultante, linhas, colunas,
+ gravaMatrizesEmTxt(matriz, matriz2, matrizresultante, linhas, colunas,
                      usuariologado, pessoas, '+');
 
   limpaterminal();
@@ -242,7 +242,7 @@ void sub(pessoa pessoas[], int usuariologado) {
   espera();
 
   free_matriz(matrizresultante, linhas);
-  free_matriz(matriz2, linhas2);
+  free_matriz(matriz2, linhas);
   free_matriz(matriz, linhas);
 }
 
@@ -757,9 +757,7 @@ void menu(pessoa pessoas[], int usuariologado) {
     case 5:
       verifica_linhas(&linhas, &colunas);
       cria_matriz(&matriz, linhas, colunas, 0, 1);
-      transposta(matriz, linhas, colunas);
-      gravaMatrizesEmTxt(matriz, NULL, matriz, linhas, colunas, usuariologado,
-                         pessoas, 'T');
+      transposta(matriz, linhas, colunas, pessoas, usuariologado);
       limpabuffer();
       espera();
       free_matriz(matriz, linhas);
@@ -1133,8 +1131,8 @@ void gravaMatrizesEmTxt(Fracao **matriz1, Fracao **matriz2,
         fprintf(arquivo, "=\t");
 
         for (int j = 0; j < colunas; j++) {
-          fprintf(arquivo, "%5d/%-5d\t", matrizresultante[j][i].numerador,
-                  matrizresultante[j][i].denominador);  // Troca de índices para transposta
+          fprintf(arquivo, "%5d/%-5d\t", matrizresultante[i][j].numerador,
+                  matrizresultante[i][j].denominador);  // Troca de índices para transposta
         }
 
         fprintf(arquivo, "\n");
