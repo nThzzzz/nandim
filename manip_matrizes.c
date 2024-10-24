@@ -242,7 +242,7 @@ void sub(pessoa pessoas[], int usuariologado) {
   espera();
 
   free_matriz(matrizresultante, linhas);
-  free_matriz(matriz2, linhas);
+  free_matriz(matriz2, linhas2);
   free_matriz(matriz, linhas);
 }
 
