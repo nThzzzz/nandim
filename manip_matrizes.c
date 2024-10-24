@@ -149,13 +149,14 @@ void printMatriz(Fracao **matriz, int linhas, int colunas) {
 }
 
 // Funçao que mostra a da matriz
-void transposta(Fracao **matriz, int linhas, int colunas,pessoa pessoas[], int usuariologado) {
+void transposta(Fracao **matriz, int linhas, int colunas, pessoa pessoas[], int usuariologado) {
     Fracao **matriztra;
-    cria_submatriz(&matriztra, linhas, colunas);
+    cria_submatriz(&matriztra, colunas, linhas); 
     
-    for (int i = 0; i < colunas; i++) {
-        for (int j = 0; j < linhas; j++) {
-            matriztra[i][j] = matriz[j][i];
+    // Correção na transposição
+    for (int i = 0; i < linhas; i++) {
+        for (int j = 0; j < colunas; j++) {
+            matriztra[j][i] = matriz[i][j]; //a pika é que ele tava salvando errado
         }
     }
 
@@ -165,8 +166,10 @@ void transposta(Fracao **matriz, int linhas, int colunas,pessoa pessoas[], int u
         }
         printf("\n");
     }
-	 gravaMatrizesEmTxt(matriz, NULL, matriztra, linhas, colunas, usuariologado, pessoas, 'T');
-    for(int i = 0; i < colunas; i++) {
+
+    gravaMatrizesEmTxt(matriz, NULL, matriztra, linhas, colunas, usuariologado, pessoas, 'T');
+    
+    for (int i = 0; i < colunas; i++) {
         free(matriztra[i]);
     }
     free(matriztra);
@@ -1120,24 +1123,30 @@ void gravaMatrizesEmTxt(Fracao **matriz1, Fracao **matriz2,
       }
     }
   } else {  // Caso matriz2 seja NULL
-    if (opc == 'T') {  // Operação Transposta
-      fprintf(arquivo, "\n\t::VALORES DAS MATRIZES (Transposta)::\n");
-      for (int i = 0; i < linhas; i++) {
+if (opc == 'T') {  // Operação Transposta
+    fprintf(arquivo, "\n\t::VALORES DAS MATRIZES (Transposta)::\n");
+
+    // Imprimir a matriz original
+    for (int i = 0; i < linhas; i++) {
         for (int j = 0; j < colunas; j++) {
-          fprintf(arquivo, "%5d/%-5d\t", matriz1[i][j].numerador,
-                  matriz1[i][j].denominador);
+            fprintf(arquivo, "%5d/%-5d\t", matriz1[i][j].numerador,
+                    matriz1[i][j].denominador);
         }
-
-        fprintf(arquivo, "=\t");
-
-        for (int j = 0; j < colunas; j++) {
-          fprintf(arquivo, "%5d/%-5d\t", matrizresultante[i][j].numerador,
-                  matrizresultante[i][j].denominador);  // Troca de índices para transposta
-        }
-
         fprintf(arquivo, "\n");
-      }
-    } else if (opc == 'D') {  // Operação Determinante
+    }
+
+    fprintf(arquivo, "=\n");
+
+    // Imprimir a matriz transposta
+    for (int j = 0; j < colunas; j++) {
+        for (int i = 0; i < linhas; i++) { 
+            fprintf(arquivo, "%5d/%-5d\t", matrizresultante[j][i].numerador,
+                    matrizresultante[j][i].denominador);
+        }
+        fprintf(arquivo, "\n");
+    }
+}
+else if (opc == 'D') {  // Operação Determinante
       fprintf(arquivo, "\n\t::VALOR DA DETERMINANTE::\n");
       Fracao det = determinante(matriz1, linhas);  // Função de cálculo de determinante
       fprintf(arquivo, "Determinante: %5d/%-5d\n", det.numerador, det.denominador);
